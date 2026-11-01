@@ -1704,10 +1704,9 @@ _svgAirco(u) {
           100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.9; }
         }
         @keyframes heatStream {
-          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; filter: drop-shadow(0 0 2px #f97316); }
-          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; filter: drop-shadow(0 0 5px #ef4444); }
+          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; }
+          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; }
         }
-
         /* Dark mode ondersteuning voor Airco */
         :host(.wm-dark) .ac-svg rect[fill="#ffffff"] {
           fill: #1e293b !important;
