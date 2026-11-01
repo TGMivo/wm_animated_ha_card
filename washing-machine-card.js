@@ -1181,7 +1181,7 @@ _svgAirco(u) {
           <path class="flow-line line-5" d="M 155 80 Q 160 100 165 115" />
         </g>
 
-        <!-- Airco Behuizing (vast wit gemaakt) -->
+        <!-- Airco Behuizing -->
         <rect x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
         <rect x="135" y="32" width="30" height="14" rx="3" fill="#1e293b" />
         <text id="acTemp" x="150" y="43" font-size="9" fill="#38bdf8" text-anchor="middle" font-family="sans-serif">20°</text>
@@ -1786,10 +1786,19 @@ _svgAirco(u) {
                     wrapEl.classList.add("ac-on", `mode-${climState}`);
                 }
             }
+         } else if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
+            const rawState = status ? String(status.state) : "";
+            const capitalizedRaw = WashingMachineCard.capitalize(rawState, t.locale);
+            this._el("stState").textContent = noData ? t.state_nodata : capitalizedRaw;
+        } else {
+            this._el("stState").textContent = t[`state_${displayState}`];
+        }
             if (machineEl) {
-                machineEl.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto");
-                if (climState !== "off") {
-                    machineEl.classList.add(`mode-${climState}`);
+                machineEl.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto", "ac-on", "ac-off");
+                if (climState === "off") {
+                    machineEl.classList.add("ac-off");
+                } else {
+                    machineEl.classList.add("ac-on", `mode-${climState}`);
                 }
             }
         } else if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
