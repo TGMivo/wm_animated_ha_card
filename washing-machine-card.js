@@ -1593,6 +1593,155 @@ _svgAirco(u) {
           0% { stroke: #f0a04b; filter: drop-shadow(0 0 1px rgba(240, 160, 75, 0.4)); }
           100% { stroke: #ffb75e; filter: drop-shadow(0 0 4px rgba(240, 160, 75, 0.8)); }
         }
+                /* Airco Basis Stijlen */
+        .ac-display-wrap {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          padding: 10px 0;
+        }
+        .ac-svg {
+          width: 220px;
+          height: auto;
+          overflow: visible;
+        }
+        .airco-svg {
+          width: 100% !important;
+          max-width: 180px !important;
+          height: auto !important;
+          margin: 0 auto;
+          display: block;
+        }
+
+        /* Klep animatie */
+        .ac-louver {
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          transform-origin: 100px 78px;
+        }
+        
+        /* ALS UIT: Klep dicht klappen & Display uit */
+        .ac-off .ac-louver {
+          transform: rotateX(-75deg) translateY(-4px);
+        }
+        .ac-off #ac-temp-display,
+        .ac-off #ac-led {
+          opacity: 0.1;
+        }
+        .ac-off .ac-airflow {
+          display: none;
+        }
+
+        /* ALS AAN: Klep open */
+        .ac-on .ac-louver {
+          transform: rotateX(0deg) translateY(6px);
+        }
+        .wrap.mode-heat ,
+        .machine.mode-heat .flow-line,
+        :host(.wm-dark) .wrap.mode-heat .flow-line {
+          stroke: #f97316 !important;
+          opacity: 0.95 !important;
+          animation: heatStream 1.5s infinite ease-in-out alternate !important;
+        }        
+
+        /* Luchtstroom lijnen basis */
+        .flow-line {
+          fill: none;
+          stroke-width: 3.5;
+          stroke-linecap: round;
+          opacity: 0;
+          transition: stroke 0.4s ease, opacity 0.4s ease;
+        }
+
+        /* Stand 1: KOELEN (Blauw & Geanimeerd) */
+        .wrap.mode-cool .flow-line,
+        .machine.mode-cool .flow-line,
+        :host(.wm-dark) .wrap.mode-cool .flow-line {
+          stroke: #3b82f6 !important;
+          opacity: 0.95 !important;
+          animation: coolStream 1.5s infinite ease-in-out alternate !important;
+        }
+        .wrap.ac-on .flow-line,
+        .machine.ac-on .flow-line {
+          opacity: 0.7;
+        }
+        @keyframes coolStream {
+          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
+          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.95; }
+        }
+        @keyframes heatStream {
+          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; filter: drop-shadow(0 0 2px #f97316); }
+          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; filter: drop-shadow(0 0 5px #ef4444); }
+        }
+        
+        /* Stand 2: VERWARMEN (Oranje/Rood) */
+        .wrap.mode-heat .flow-line,
+        .machine.mode-heat .flow-line,
+        :host(.wm-dark) .wrap.mode-heat .flow-line {
+          stroke: #f97316 !important;
+          opacity: 0.95 !important;
+          animation: heatStream 1.5s infinite ease-in-out alternate !important;
+        }
+
+        /* Stand 3 & 4: ONTVOCHTIGEN / VENTILATOR (Grijs) */
+        .mode-dry .flow-line,
+        .mode-fan_only .flow-line {
+          stroke: #94a3b8;
+          opacity: 0.6;
+          animation: coolStream 2s infinite ease-in-out alternate;
+        }
+
+        /* Stand 5: AUTO (Regenboog/Sfeer of zachtblauw) */
+        .mode-auto .flow-line {
+          stroke: #06b6d4;
+          opacity: 0.8;
+          animation: coolStream 1.2s infinite ease-in-out alternate;
+        }
+
+        /* Animaties voor de luchtstroom */
+        @keyframes coolStream {
+          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
+          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.9; }
+        }
+        @keyframes heatStream {
+          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; filter: drop-shadow(0 0 2px #f97316); }
+          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; filter: drop-shadow(0 0 5px #ef4444); }
+        }
+
+        /* Dark mode ondersteuning voor Airco */
+        :host(.wm-dark) .ac-svg rect[fill="#ffffff"] {
+          fill: #1e293b !important;
+          stroke: #334155 !important;
+        }
+        :host(.wm-dark) .machine#machine rect[stroke] {
+          stroke: #475569 !important;
+        }
+        :host(.wm-dark) .ac-louver {
+          fill: #334155 !important;
+          stroke: #475569 !important;
+        }
+        :host(.wm-dark) .wrap.running .flow-line,
+        .wrap.running .flow-line {
+          stroke: #94a3b8;
+          opacity: 0.6;
+        }
+        :host(.wm-dark) .wrap.running .flow-line,
+        .wrap.running .flow-line {
+          stroke: #94a3b8;
+          opacity: 0.6;
+        }
+        :host(.wm-dark) .mode-heat .flow-line,
+        .mode-heat .flow-line {
+          stroke: #f97316 !important;
+          opacity: 0.9 !important;
+          animation: heatStream 1.5s infinite ease-in-out alternate;
+        }
+
+        :host(.wm-dark) .mode-cool .flow-line,
+        .mode-cool .flow-line {
+          stroke: #3b82f6 !important;
+          opacity: 0.9 !important;
+          animation: coolStream 1.5s infinite ease-in-out alternate;
+        }
       </style>
 
       <ha-card>
@@ -2338,155 +2487,7 @@ class WashingMachineCardEditor extends HTMLElement {
         });
         root.innerHTML = `
       <style>
-        /* Airco Basis Stijlen */
-        .ac-display-wrap {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          padding: 10px 0;
-        }
-        .ac-svg {
-          width: 220px;
-          height: auto;
-          overflow: visible;
-        }
-        .airco-svg {
-          width: 100% !important;
-          max-width: 180px !important;
-          height: auto !important;
-          margin: 0 auto;
-          display: block;
-        }
 
-        /* Klep animatie */
-        .ac-louver {
-          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-          transform-origin: 100px 78px;
-        }
-        
-        /* ALS UIT: Klep dicht klappen & Display uit */
-        .ac-off .ac-louver {
-          transform: rotateX(-75deg) translateY(-4px);
-        }
-        .ac-off #ac-temp-display,
-        .ac-off #ac-led {
-          opacity: 0.1;
-        }
-        .ac-off .ac-airflow {
-          display: none;
-        }
-
-        /* ALS AAN: Klep open */
-        .ac-on .ac-louver {
-          transform: rotateX(0deg) translateY(6px);
-        }
-        .wrap.mode-heat .flow-line,
-        .machine.mode-heat .flow-line,
-        :host(.wm-dark) .wrap.mode-heat .flow-line {
-          stroke: #f97316 !important;
-          opacity: 0.95 !important;
-          animation: heatStream 1.5s infinite ease-in-out alternate !important;
-        }        
-
-        /* Luchtstroom lijnen basis */
-        .flow-line {
-          fill: none;
-          stroke-width: 3.5;
-          stroke-linecap: round;
-          opacity: 0;
-          transition: stroke 0.4s ease, opacity 0.4s ease;
-        }
-
-        /* Stand 1: KOELEN (Blauw & Geanimeerd) */
-        .wrap.mode-cool .flow-line,
-        .machine.mode-cool .flow-line,
-        :host(.wm-dark) .wrap.mode-cool .flow-line {
-          stroke: #3b82f6 !important;
-          opacity: 0.95 !important;
-          animation: coolStream 1.5s infinite ease-in-out alternate !important;
-        }
-        .wrap.ac-on .flow-line,
-        .machine.ac-on .flow-line {
-          opacity: 0.7;
-        }
-        @keyframes coolStream {
-          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
-          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.95; }
-        }
-        @keyframes heatStream {
-          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; filter: drop-shadow(0 0 2px #f97316); }
-          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; filter: drop-shadow(0 0 5px #ef4444); }
-        }
-        
-        /* Stand 2: VERWARMEN (Oranje/Rood) */
-        .wrap.mode-heat .flow-line,
-        .machine.mode-heat .flow-line,
-        :host(.wm-dark) .wrap.mode-heat .flow-line {
-          stroke: #f97316 !important;
-          opacity: 0.95 !important;
-          animation: heatStream 1.5s infinite ease-in-out alternate !important;
-        }
-
-        /* Stand 3 & 4: ONTVOCHTIGEN / VENTILATOR (Grijs) */
-        .mode-dry .flow-line,
-        .mode-fan_only .flow-line {
-          stroke: #94a3b8;
-          opacity: 0.6;
-          animation: coolStream 2s infinite ease-in-out alternate;
-        }
-
-        /* Stand 5: AUTO (Regenboog/Sfeer of zachtblauw) */
-        .mode-auto .flow-line {
-          stroke: #06b6d4;
-          opacity: 0.8;
-          animation: coolStream 1.2s infinite ease-in-out alternate;
-        }
-
-        /* Animaties voor de luchtstroom */
-        @keyframes coolStream {
-          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
-          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.9; }
-        }
-        @keyframes heatStream {
-          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; filter: drop-shadow(0 0 2px #f97316); }
-          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; filter: drop-shadow(0 0 5px #ef4444); }
-        }
-
-        /* Dark mode ondersteuning voor Airco */
-        :host(.wm-dark) .ac-svg rect[fill="#ffffff"] {
-          fill: #1e293b !important;
-          stroke: #334155 !important;
-        }
-        :host(.wm-dark) .machine#machine rect[stroke] {
-          stroke: #475569 !important;
-        }
-        :host(.wm-dark) .ac-louver {
-          fill: #334155 !important;
-          stroke: #475569 !important;
-        }
-        :host(.wm-dark) .wrap.running .flow-line,
-        .wrap.running .flow-line {
-          stroke: #94a3b8;
-          opacity: 0.6;
-        }
-        :host(.wm-dark) .wrap.running .flow-line,
-        .wrap.running .flow-line {
-          stroke: #94a3b8;
-          opacity: 0.6;
-        }
-        :host(.wm-dark) .mode-heat .flow-line,
-        .mode-heat .flow-line {
-          stroke: #f97316 !important;
-          opacity: 0.9 !important;
-          animation: heatStream 1.5s infinite ease-in-out alternate;
-        }
-
-        :host(.wm-dark) .mode-cool .flow-line,
-        .mode-cool .flow-line {
-          stroke: #3b82f6 !important;
-          opacity: 0.9 !important;
-          animation: coolStream 1.5s infinite ease-in-out alternate;
-        }
         :host { display: block; }
         .wm-editor { display: flex; flex-direction: column; gap: 16px; padding: 4px 0 8px; }
         .wm-field { display: flex; flex-direction: column; gap: 6px; }
