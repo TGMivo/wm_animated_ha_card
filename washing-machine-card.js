@@ -1775,7 +1775,7 @@ _svgAirco(u) {
             const tempDisplay = this.shadowRoot.getElementById("acTemp");
             if (tempDisplay) tempDisplay.textContent = `${targetTemp}°`;
 
-            // Animatie klassen op de hoofdkaart
+            // Animatie klassen op de hoofdkaart en machine
             const wrapEl = this._el("wrap");
             const machineEl = this._el("machine");
             if (wrapEl) {
@@ -1786,13 +1786,6 @@ _svgAirco(u) {
                     wrapEl.classList.add("ac-on", `mode-${climState}`);
                 }
             }
-         } else if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
-            const rawState = status ? String(status.state) : "";
-            const capitalizedRaw = WashingMachineCard.capitalize(rawState, t.locale);
-            this._el("stState").textContent = noData ? t.state_nodata : capitalizedRaw;
-        } else {
-            this._el("stState").textContent = t[`state_${displayState}`];
-        }
             if (machineEl) {
                 machineEl.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto", "ac-on", "ac-off");
                 if (climState === "off") {
@@ -1808,6 +1801,7 @@ _svgAirco(u) {
         } else {
             this._el("stState").textContent = t[`state_${displayState}`];
         }
+        
         const hideStatus = !!c.hide_status_panel && !active && applianceState !== "standby";
         this._el("statusPanel").classList.toggle("hidden", hideStatus);
         this._el("notifyBtn").title = t.tip_notify;
