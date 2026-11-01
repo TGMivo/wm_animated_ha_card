@@ -1160,6 +1160,7 @@ _svgDryingRack(u) {
     }
 _svgAirco(u) {
         return `
+      <rect x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>  
       <svg class="machine" id="machine" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="${u}-cool-flow" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -1777,12 +1778,19 @@ _svgAirco(u) {
 
             // Animatie klassen op de hoofdkaart
             const wrapEl = this._el("wrap");
+            const machineEl = this._el("machine");
             if (wrapEl) {
                 wrapEl.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto", "ac-on", "ac-off");
                 if (climState === "off") {
                     wrapEl.classList.add("ac-off");
                 } else {
                     wrapEl.classList.add("ac-on", `mode-${climState}`);
+                }
+            }
+            if (machineEl) {
+                machineEl.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto");
+                if (climState !== "off") {
+                    machineEl.classList.add(`mode-${climState}`);
                 }
             }
         } else if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
@@ -2374,16 +2382,16 @@ class WashingMachineCardEditor extends HTMLElement {
 
         /* Stand 1: KOELEN (Blauw & Geanimeerd) */
         .mode-cool .flow-line {
-          stroke: #3b82f6;
-          opacity: 0.8;
-          animation: coolStream 1.5s infinite ease-in-out alternate;
+          stroke: #3b82f6 !important;
+          opacity: 0.9 !important;
+          animation: coolStream 1.5s infinite ease-in-out alternate !important;
         }
         
         /* Stand 2: VERWARMEN (Oranje/Rood) */
         .mode-heat .flow-line {
-          stroke: #f97316;
-          opacity: 0.8;
-          animation: heatStream 1.5s infinite ease-in-out alternate;
+          stroke: #f97316 !important;
+          opacity: 0.9 !important;
+          animation: heatStream 1.5s infinite ease-in-out alternate !important;
         }
 
         /* Stand 3 & 4: ONTVOCHTIGEN / VENTILATOR (Grijs) */
@@ -2416,9 +2424,22 @@ class WashingMachineCardEditor extends HTMLElement {
           fill: #1e293b !important;
           stroke: #334155 !important;
         }
+        :host(.wm-dark) .machine#machine rect[stroke] {
+          stroke: #475569 !important;
+        }
         :host(.wm-dark) .ac-louver {
           fill: #334155 !important;
           stroke: #475569 !important;
+        }
+        :host(.wm-dark) .wrap.running .flow-line,
+        .wrap.running .flow-line {
+          stroke: #94a3b8;
+          opacity: 0.6;
+        }
+        :host(.wm-dark) .wrap.running .flow-line,
+        .wrap.running .flow-line {
+          stroke: #94a3b8;
+          opacity: 0.6;
         }
         :host(.wm-dark) .mode-heat .flow-line,
         .mode-heat .flow-line {
