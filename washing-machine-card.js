@@ -1160,7 +1160,6 @@ _svgDryingRack(u) {
     }
 _svgAirco(u) {
         return `
-      <rect x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>  
       <svg class="machine airco-svg" id="machine" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="${u}-cool-flow" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -1182,16 +1181,16 @@ _svgAirco(u) {
           <path class="flow-line line-5" d="M 155 80 Q 160 100 165 115" />
         </g>
 
-        <!-- Airco Behuizing -->
-        <rect x="20" y="20" width="160" height="60" rx="8" fill="var(--wm-icon-bg, #ffffff)" stroke="var(--wm-divider, #cbd5e1)" stroke-width="2"/>
+        <!-- Airco Behuizing (vast wit gemaakt) -->
+        <rect x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
         <rect x="135" y="32" width="30" height="14" rx="3" fill="#1e293b" />
         <text id="acTemp" x="150" y="43" font-size="9" fill="#38bdf8" text-anchor="middle" font-family="sans-serif">20°</text>
         <circle cx="130" cy="39" r="2" fill="#22c55e" id="dispDot"/>
-        <line x1="30" y1="65" x2="170" y2="65" stroke="var(--wm-divider, #e2e8f0)" stroke-width="1"/>
+        <line x1="30" y1="65" x2="170" y2="65" stroke="#e2e8f0" stroke-width="1"/>
 
         <!-- Beweegbare Klep / Louver -->
         <g class="ac-louver-group">
-          <path class="ac-louver" d="M 25 78 L 175 78 C 175 83, 165 85, 100 85 C 35 85, 25 83, 25 78 Z" fill="var(--wm-badge-bg, #e2e8f0)" stroke="var(--wm-muted, #94a3b8)" stroke-width="1"/>
+          <path class="ac-louver" d="M 25 78 L 175 78 C 175 83, 165 85, 100 85 C 35 85, 25 83, 25 78 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
         </g>
       </svg>`;
     }
@@ -2381,10 +2380,9 @@ class WashingMachineCardEditor extends HTMLElement {
         /* Luchtstroom lijnen basis */
         .flow-line {
           fill: none;
-          stroke-width: 4;
+          stroke-width: 3.5;
           stroke-linecap: round;
           opacity: 0;
-          transition: stroke 0.4s ease, opacity 0.4s ease;
         }
 
         /* Stand 1: KOELEN (Blauw & Geanimeerd) */
@@ -2392,8 +2390,20 @@ class WashingMachineCardEditor extends HTMLElement {
         .machine.mode-cool .flow-line,
         :host(.wm-dark) .wrap.mode-cool .flow-line {
           stroke: #3b82f6 !important;
-          opacity: 0.9 !important;
+          opacity: 0.95 !important;
           animation: coolStream 1.5s infinite ease-in-out alternate !important;
+        }
+        .wrap.ac-on .flow-line,
+        .machine.ac-on .flow-line {
+          opacity: 0.7;
+        }
+        @keyframes coolStream {
+          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
+          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.95; }
+        }
+        @keyframes heatStream {
+          0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; filter: drop-shadow(0 0 2px #f97316); }
+          100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; filter: drop-shadow(0 0 5px #ef4444); }
         }
         
         /* Stand 2: VERWARMEN (Oranje/Rood) */
@@ -2401,7 +2411,7 @@ class WashingMachineCardEditor extends HTMLElement {
         .machine.mode-heat .flow-line,
         :host(.wm-dark) .wrap.mode-heat .flow-line {
           stroke: #f97316 !important;
-          opacity: 0.9 !important;
+          opacity: 0.95 !important;
           animation: heatStream 1.5s infinite ease-in-out alternate !important;
         }
 
