@@ -1160,6 +1160,7 @@ _svgDryingRack(u) {
     }
 _svgAirco(u) {
         return `
+      <rect class="airco-housing" x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>  
       <svg class="machine airco-svg" id="machine" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="${u}-cool-flow" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -1629,6 +1630,10 @@ _svgAirco(u) {
         }
         .ac-off .ac-airflow {
           display: none;
+        }
+        .airco-housing {
+          stroke-dasharray: none !important;
+          animation: none !important;
         }
 
         /* ALS AAN: Klep open */
