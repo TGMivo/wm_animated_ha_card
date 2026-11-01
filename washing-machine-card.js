@@ -1899,8 +1899,9 @@ _svgAirco(u) {
             this._el("plugBtn").classList.remove("hidden");
             this._el("plugBtn").classList.toggle("on", on);
         }
-    }
-}
+    } // Sluit de _update() methode af
+
+} // Sluit de class WashingMachineCard af
 
 if (!customElements.get("washing-machine-card")) {
     customElements.define("washing-machine-card", WashingMachineCard);
