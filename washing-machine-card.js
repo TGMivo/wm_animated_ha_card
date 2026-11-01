@@ -7,7 +7,7 @@
  *
  * https://github.com/sionetta/wm_animated_ha_card
  * License: MIT
- * Version: 1.5.4
+ * Version: 1.5.4.1
  */
 
 class WashingMachineCard extends HTMLElement {
@@ -381,10 +381,15 @@ class WashingMachineCard extends HTMLElement {
         const c = this._config;
         const status = this._st(c.status_entity);
         const state = status ? String(status.state).toLowerCase() : "";
+        if (c.status_entity && c.status_entity.startsWith("climate.")) {
+            return state && !["off", "unavailable", "unknown"].includes(state);
+        }
+
         const byStatus = !!status && c.running_states.some((k) => String(k).toLowerCase() === state);
         const byBinaryOn = state === "on";
         return byStatus || byBinaryOn;
     }
+
 
     _isRunning() {
         const c = this._config;
@@ -1756,13 +1761,19 @@ _svgAirco(u) {
             };
             this._el("stState").textContent = climMap[climState] || WashingMachineCard.capitalize(climState, t.locale);
 
-            const cardContainer = this.shadowRoot.querySelector(".card");
-            if (cardContainer) {
-                cardContainer.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto", "ac-on", "ac-off");
+            // Temperatuur op het airco-schermpje bijwerken
+            const targetTemp = this._st(c.climate_entity).attributes.temperature || '--';
+            const tempDisplay = this.shadowRoot.getElementById("acTemp");
+            if (tempDisplay) tempDisplay.textContent = `${targetTemp}°`;
+
+            // Animatie klassen op de hoofdkaart
+            const wrapEl = this._el("wrap");
+            if (wrapEl) {
+                wrapEl.classList.remove("mode-cool", "mode-heat", "mode-dry", "mode-fan_only", "mode-auto", "ac-on", "ac-off");
                 if (climState === "off") {
-                    cardContainer.classList.add("ac-off");
+                    wrapEl.classList.add("ac-off");
                 } else {
-                    cardContainer.classList.add("ac-on", `mode-${climState}`);
+                    wrapEl.classList.add("ac-on", `mode-${climState}`);
                 }
             }
         } else if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
