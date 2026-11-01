@@ -2420,6 +2420,19 @@ class WashingMachineCardEditor extends HTMLElement {
           fill: #334155 !important;
           stroke: #475569 !important;
         }
+        :host(.wm-dark) .mode-heat .flow-line,
+        .mode-heat .flow-line {
+          stroke: #f97316 !important;
+          opacity: 0.9 !important;
+          animation: heatStream 1.5s infinite ease-in-out alternate;
+        }
+
+        :host(.wm-dark) .mode-cool .flow-line,
+        .mode-cool .flow-line {
+          stroke: #3b82f6 !important;
+          opacity: 0.9 !important;
+          animation: coolStream 1.5s infinite ease-in-out alternate;
+        }
         :host { display: block; }
         .wm-editor { display: flex; flex-direction: column; gap: 16px; padding: 4px 0 8px; }
         .wm-field { display: flex; flex-direction: column; gap: 6px; }
