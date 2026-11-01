@@ -1635,8 +1635,12 @@ _svgAirco(u) {
         .machine.airco-svg {
           width: 210px !important;
           max-width: 62% !important;
-          padding: 14px 0;
+          height: 190px !important;
+          padding: 10px 0;
+          display: block;
+          margin: 0 auto;
         }
+        .airco-svg rect,
         .airco-housing {
           stroke-dasharray: none !important;
           animation: none !important;
