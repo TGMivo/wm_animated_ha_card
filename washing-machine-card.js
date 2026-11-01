@@ -1640,8 +1640,8 @@ _svgAirco(u) {
           display: block;
           margin: 0 auto;
         }
-        .airco-svg rect,
-        .airco-housing {
+        .airco-housing,
+        .airco-svg rect {
           stroke-dasharray: none !important;
           animation: none !important;
         }
