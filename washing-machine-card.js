@@ -391,8 +391,12 @@ class WashingMachineCard extends HTMLElement {
     }
 
 
-    _isRunning() {
+_isRunning() {
         const c = this._config;
+        if (c.status_entity && c.status_entity.startsWith("climate.")) {
+            const state = String(this._st(c.status_entity)?.state || "").toLowerCase();
+            return state && !["off", "unavailable", "unknown"].includes(state);
+        }
         const cycleIsActive = this._cycleIsActive();
         if (!c.power_entity)
             return cycleIsActive;
@@ -402,6 +406,11 @@ class WashingMachineCard extends HTMLElement {
 
     _applianceState() {
         const c = this._config;
+        if (c.status_entity && c.status_entity.startsWith("climate.")) {
+            const state = String(this._st(c.status_entity)?.state || "").toLowerCase();
+            if (!state || ["off", "unavailable", "unknown"].includes(state)) return "off";
+            return "running"; // Zorgt ervoor dat de kaart 'bezig/aan' toont in plaats van gepauzeerd
+        }
         const cycleIsActive = this._cycleIsActive();
         if (!c.power_entity)
             return cycleIsActive ? "running" : "off";
