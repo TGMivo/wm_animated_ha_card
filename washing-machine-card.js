@@ -1160,8 +1160,7 @@ _svgDryingRack(u) {
     }
 _svgAirco(u) {
         return `
-      <rect class="airco-housing" x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>  
-      <svg class="machine airco-svg" id="machine" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+      <svg class="machine airco-svg" id="machine" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="${u}-cool-flow" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8"/>
@@ -1173,8 +1172,8 @@ _svgAirco(u) {
           </linearGradient>
         </defs>
 
-        <!-- Luchtstroom streepjes -->
-        <g class="ac-airflow">
+        <!-- Luchtstroom streepjes (centraal geplaatst) -->
+        <g class="ac-airflow" transform="translate(0, 40)">
           <path class="flow-line line-1" d="M 45 80 Q 40 100 35 115" />
           <path class="flow-line line-2" d="M 75 82 Q 73 102 70 118" />
           <path class="flow-line line-3" d="M 100 83 Q 100 103 100 119" />
@@ -1182,16 +1181,18 @@ _svgAirco(u) {
           <path class="flow-line line-5" d="M 155 80 Q 160 100 165 115" />
         </g>
 
-        <!-- Airco Behuizing -->
-        <rect x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-        <rect x="135" y="32" width="30" height="14" rx="3" fill="#1e293b" />
-        <text id="acTemp" x="150" y="43" font-size="9" fill="#38bdf8" text-anchor="middle" font-family="sans-serif">20°</text>
-        <circle cx="130" cy="39" r="2" fill="#22c55e" id="dispDot"/>
-        <line x1="30" y1="65" x2="170" y2="65" stroke="#e2e8f0" stroke-width="1"/>
+        <!-- Airco Behuizing (centraal geplaatst) -->
+        <g transform="translate(0, 40)">
+          <rect class="airco-housing" x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+          <rect x="135" y="32" width="30" height="14" rx="3" fill="#1e293b" />
+          <text id="acTemp" x="150" y="43" font-size="9" fill="#38bdf8" text-anchor="middle" font-family="sans-serif">20°</text>
+          <circle cx="130" cy="39" r="2" fill="#22c55e" id="dispDot"/>
+          <line x1="30" y1="65" x2="170" y2="65" stroke="#e2e8f0" stroke-width="1"/>
 
-        <!-- Beweegbare Klep / Louver -->
-        <g class="ac-louver-group">
-          <path class="ac-louver" d="M 25 78 L 175 78 C 175 83, 165 85, 100 85 C 35 85, 25 83, 25 78 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+          <!-- Beweegbare Klep / Louver -->
+          <g class="ac-louver-group">
+            <path class="ac-louver" d="M 25 78 L 175 78 C 175 83, 165 85, 100 85 C 35 85, 25 83, 25 78 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+          </g>
         </g>
       </svg>`;
     }
