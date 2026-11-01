@@ -1641,7 +1641,9 @@ _svgAirco(u) {
           margin: 0 auto;
         }
         .airco-housing,
-        .airco-svg rect {
+        .airco-svg rect,
+        .airco-svg path:not(.flow-line),
+        .airco-svg line {
           stroke-dasharray: none !important;
           animation: none !important;
         }
