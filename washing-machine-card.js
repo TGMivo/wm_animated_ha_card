@@ -1664,13 +1664,14 @@ _svgAirco(u) {
         .machine.ac-on .flow-line {
           opacity: 0.7;
         }
-        @keyframes coolStream {
-          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
-          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.95; }
-        }
         @keyframes heatStream {
           0% { stroke-dasharray: 4 8; stroke-dashoffset: 0; opacity: 0.4; }
           100% { stroke-dasharray: 20 4; stroke-dashoffset: -10; opacity: 1; }
+        }
+
+        @keyframes coolStream {
+          0% { stroke-dasharray: 2 10; stroke-dashoffset: 0; opacity: 0.3; }
+          100% { stroke-dasharray: 15 5; stroke-dashoffset: -15; opacity: 0.95; }
         }
         
         /* Stand 2: VERWARMEN (Oranje/Rood) */
