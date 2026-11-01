@@ -732,7 +732,7 @@ _applianceState() {
         if (type === "drying_rack")
             return this._svgDryingRack(u);
         if (type === "airco")
-            return this._o(u);
+            return this._svgAirco(u);
         return this._svgWasher(u);
     }
 
