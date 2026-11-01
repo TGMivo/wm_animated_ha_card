@@ -1161,7 +1161,7 @@ _svgDryingRack(u) {
 _svgAirco(u) {
         return `
       <rect x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>  
-      <svg class="machine" id="machine" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+      <svg class="machine airco-svg" id="machine" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="${u}-cool-flow" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8"/>
@@ -2347,6 +2347,13 @@ class WashingMachineCardEditor extends HTMLElement {
           height: auto;
           overflow: visible;
         }
+        .airco-svg {
+          width: 100% !important;
+          max-width: 180px !important;
+          height: auto !important;
+          margin: 0 auto;
+          display: block;
+        }
 
         /* Klep animatie */
         .ac-louver {
@@ -2381,14 +2388,18 @@ class WashingMachineCardEditor extends HTMLElement {
         }
 
         /* Stand 1: KOELEN (Blauw & Geanimeerd) */
-        .mode-cool .flow-line {
+        .wrap.mode-cool .flow-line,
+        .machine.mode-cool .flow-line,
+        :host(.wm-dark) .wrap.mode-cool .flow-line {
           stroke: #3b82f6 !important;
           opacity: 0.9 !important;
           animation: coolStream 1.5s infinite ease-in-out alternate !important;
         }
         
         /* Stand 2: VERWARMEN (Oranje/Rood) */
-        .mode-heat .flow-line {
+        .wrap.mode-heat .flow-line,
+        .machine.mode-heat .flow-line,
+        :host(.wm-dark) .wrap.mode-heat .flow-line {
           stroke: #f97316 !important;
           opacity: 0.9 !important;
           animation: heatStream 1.5s infinite ease-in-out alternate !important;
