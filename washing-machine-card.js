@@ -1191,7 +1191,7 @@ _svgAirco(u) {
 
           <!-- Beweegbare Klep / Louver -->
           <g class="ac-louver-group">
-            <path class="ac-louver" d="M 25 78 L 175 78 C 175 83, 165 85, 100 85 C 35 85, 25 83, 25 78 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+            <path class="ac-louver" style="stroke-dasharray: none !important; animation: none !important;" d="M 25 78 L 175 78 C 175 83, 165 85, 100 85 C 35 85, 25 83, 25 78 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
           </g>
         </g>
       </svg>`;
@@ -1640,12 +1640,15 @@ _svgAirco(u) {
           display: block;
           margin: 0 auto;
         }
-        .airco-housing,
+        /* Blokkeer alle animaties en streepjes op de klep en behuizing van de airco */
+        .airco-svg .airco-housing,
+        .airco-svg .airco-louver,
         .airco-svg rect,
-        .airco-svg path:not(.flow-line),
-        .airco-svg line {
+        .airco-svg line,
+        .ac-louver {
           stroke-dasharray: none !important;
           animation: none !important;
+          stroke-dashoffset: 0 !important;
         }
 
         /* ALS AAN: Klep open */
