@@ -404,12 +404,12 @@ _isRunning() {
         return cycleIsActive && !isNaN(p) && p > c.power_threshold;
     }
 
-    _applianceState() {
+_applianceState() {
         const c = this._config;
         if (c.status_entity && c.status_entity.startsWith("climate.")) {
             const state = String(this._st(c.status_entity)?.state || "").toLowerCase();
             if (!state || ["off", "unavailable", "unknown"].includes(state)) return "off";
-            return "running"; // Zorgt ervoor dat de kaart 'bezig/aan' toont in plaats van gepauzeerd
+            return "running";
         }
         const cycleIsActive = this._cycleIsActive();
         if (!c.power_entity)
