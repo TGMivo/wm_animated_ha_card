@@ -1183,7 +1183,7 @@ _svgAirco(u) {
 
         <!-- Airco Behuizing (centraal geplaatst) -->
         <g transform="translate(0, 40)">
-          <rect class="airco-housing" x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+          <rect class="aig" x="20" y="20" width="160" height="60" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
           <rect x="135" y="32" width="30" height="14" rx="3" fill="#1e293b" />
           <text id="acTemp" x="150" y="43" font-size="9" fill="#38bdf8" text-anchor="middle" font-family="sans-serif">20°</text>
           <circle cx="130" cy="39" r="2" fill="#22c55e" id="dispDot"/>
@@ -1631,6 +1631,11 @@ _svgAirco(u) {
         }
         .ac-off .ac-airflow {
           display: none;
+        }
+        .machine.airco-svg {
+          width: 210px !important;
+          max-width: 75% !important;
+          padding: 18px 0;
         }
         .airco-housing {
           stroke-dasharray: none !important;
