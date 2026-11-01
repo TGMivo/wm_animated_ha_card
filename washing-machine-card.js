@@ -2376,6 +2376,13 @@ class WashingMachineCardEditor extends HTMLElement {
         .ac-on .ac-louver {
           transform: rotateX(0deg) translateY(6px);
         }
+        .wrap.mode-heat .flow-line,
+        .machine.mode-heat .flow-line,
+        :host(.wm-dark) .wrap.mode-heat .flow-line {
+          stroke: #f97316 !important;
+          opacity: 0.95 !important;
+          animation: heatStream 1.5s infinite ease-in-out alternate !important;
+        }        
 
         /* Luchtstroom lijnen basis */
         .flow-line {
@@ -2383,6 +2390,7 @@ class WashingMachineCardEditor extends HTMLElement {
           stroke-width: 3.5;
           stroke-linecap: round;
           opacity: 0;
+          transition: stroke 0.4s ease, opacity 0.4s ease;
         }
 
         /* Stand 1: KOELEN (Blauw & Geanimeerd) */
