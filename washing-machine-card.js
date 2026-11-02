@@ -7,7 +7,8 @@
  *
  * https://github.com/sionetta/wm_animated_ha_card
  * License: MIT
- * Version: 1.5.4.1
+ * Version: 1.6.4
+ Added Hood
  */
 
 class WashingMachineCard extends HTMLElement {   
@@ -80,11 +81,13 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Духовка", state_running: "Выпечка" },
                 microwave: { name: "Микроволновка", state_running: "Разогрев" },
                 drying_rack: { name: "Сушилка для белья", state_running: "Сушка" },
-                airco: { name: "Кондиционирование", state_running: "Охлаждение / Нагрев" }
+                airco: { name: "Кондиционирование", state_running: "Охлаждение / Нагрев" },
+                hood: { name: "Вытяжка", state_running: "Работает" },
                 
             },
             running_states: [
-                "стирка", "отжим", "полоскание",
+                "стирка", "отжим", "полоскание", "запуск", "запуск", "стирка", "отжим", "полоскание", "сушка",
+                "сушка", "барабанная дробь", "выпечка", "выпекать", "приготовление пищи", "готовить", "нагрев", "нагрев", "микроволновая печь", "духовка", "вкл", "охлаждение", "осушение", "вентилятор",
             ],
         },
         de: {
@@ -106,7 +109,8 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Backofen", state_running: "Backt" },
                 microwave: { name: "Mikrowelle", state_running: "Erwärmt" },
                 drying_rack: { name: "Wäscheständer", state_running: "Erwärmt" },
-                airco: { name: "Klimaanlage", state_running: "Kühlen / Heizen" }
+                airco: { name: "Klimaanlage", state_running: "Kühlen / Heizen" },
+                hood: { name: "Dunstabzugshaube", state_running: "Saugt ab" },
             },
             running_states: [
                 "waschen", "läuft", "schleudern", "spülen", "trocknen",
@@ -408,10 +412,78 @@ class WashingMachineCard extends HTMLElement {
 
         const byStatus = !!status && c.running_states.some((k) => String(k).toLowerCase() === state);
         const byBinaryOn = state === "on";
+        const byFan = this._applianceType === "hood" &&
+            ((this._hoodLevel(c.fan_entity)?.level || 0) > 0 ||
+             (this._hoodLevel(c.intensive_entity)?.level || 0) > 0);
         return byStatus || byBinaryOn;
     }
 
+    // Reads a fan speed from any common entity shape and returns { level, max, percent }:
+    //   fan.*                     → percentage (and percentage_step, when it describes real steps)
+    //   select / input_select     → the number in the option, e.g. Home Connect "FanStage02" → 2,
+    //                               "FanOff" → 0; options without numbers count by position
+    //   number / input_number / sensor → the numeric state, max from the "max" attribute
+    // Returns null when the entity is missing, unavailable or unreadable.
+    _hoodLevel(entityId) {
+        const st = this._st(entityId);
+        if (!st)
+            return null;
+        const raw = String(st.state ?? "").trim();
+        const low = raw.toLowerCase();
+        if (!raw || ["unknown", "unavailable", "none"].includes(low))
+            return null;
+        const domain = String(entityId).split(".")[0];
+        const attrs = st.attributes || {};
+        const isOff = (s) => /off$|^aus$|^none$/i.test(String(s).trim());
+        const numIn = (s) => {
+            const m = String(s).match(/(\d+)\s*$/);
+            return m ? Number(m[1]) : null;
+        };
 
+        if (domain === "fan") {
+            if (low === "off")
+                return { level: 0, max: WashingMachineCard._fanSteps(attrs), percent: false };
+            const pct = Number(attrs.percentage);
+            const steps = WashingMachineCard._fanSteps(attrs);
+            if (!Number.isFinite(pct))
+                return { level: low === "on" ? 1 : 0, max: 1, percent: false };
+            if (steps)
+                return { level: Math.round(pct / (100 / steps)), max: steps, percent: false };
+            return { level: Math.round(pct), max: 100, percent: true };
+        }
+
+        const options = Array.isArray(attrs.options) ? attrs.options.map(String) : null;
+        if (options && options.length) {
+            const nums = options.map(numIn);
+            const numbered = options.filter((o, i) => nums[i] !== null || isOff(o)).length === options.length;
+            if (numbered) {
+                const max = Math.max(1, ...nums.filter((n) => n !== null));
+                return { level: isOff(raw) ? 0 : (numIn(raw) ?? 0), max, percent: false };
+            }
+            const idx = options.indexOf(raw);
+            if (idx >= 0)
+                return { level: idx, max: Math.max(1, options.length - 1), percent: false };
+        }
+
+        if (isOff(raw))
+            return { level: 0, max: null, percent: false };
+        if (low === "on")
+            return { level: 1, max: 1, percent: false };
+        const n = Number(raw.replace(",", "."));
+        const num = Number.isFinite(n) ? n : numIn(raw);
+        if (num === null || !Number.isFinite(num))
+            return null;
+        const max = Number(attrs.max);
+        return { level: Math.max(0, Math.round(num)), max: Number.isFinite(max) && max > 0 ? max : null, percent: false };
+    }
+    static _fanSteps(attrs) {
+        const step = Number(attrs?.percentage_step);
+        if (Number.isFinite(step) && step >= 5 && step <= 100)
+            return Math.round(100 / step);
+        return null;
+    }
+
+    
 _isRunning() {
         const c = this._config;
         if (c.status_entity && c.status_entity.startsWith("climate.")) {
@@ -518,11 +590,12 @@ _applianceState() {
                 end.setDate(end.getDate() + 1);
             return (end.getTime() - now.getTime()) / 60000;
         }
-
+ // Duration strings: H:MM:SS or H:MM.
         const hms = raw.match(/^(\d+):([0-5]\d)(?::([0-5]\d))?$/);
         if (hms)
             return Number(hms[1]) * 60 + Number(hms[2]) + Number(hms[3] || 0) / 60;
 
+         // Numeric durations: minutes by default, with standard HA unit conversion.
         const numeric = Number(raw.replace(",", "."));
         if (Number.isFinite(numeric)) {
             const unit = String(entity.attributes?.unit_of_measurement || "").trim().toLowerCase();
@@ -537,6 +610,7 @@ _applianceState() {
             return Math.max(0, numeric);
         }
 
+           // A timestamp is interpreted as the expected end time.
         const end = this._parseDate(raw);
         if (end)
             return Math.max(0, (end.getTime() - Date.now()) / 60000);
@@ -612,12 +686,22 @@ _applianceState() {
     _startDate() {
         const c = this._config;
         const status = this._st(c.status_entity);
+        if (this._applianceType === "hood") {
+            // No cycles: count from when the status went active, or from the last fan change
+            // while the status entity has not caught up yet.
+            const statusActive = !!status && (String(status.state).toLowerCase() === "on" ||
+                c.running_states.some((k) => String(k).toLowerCase() === String(status.state).toLowerCase()));
+            const src = statusActive ? status : (this._st(c.fan_entity) || this._st(c.intensive_entity) || status);
+            return src ? this._parseDate(src.last_changed) : null;
+        }        
         return (
             (c.last_wash_entity && this._parseDate(this._st(c.last_wash_entity)?.state)) ||
             (status && this._parseDate(status.last_changed)) ||
             null);
     }
 
+        // Home Assistant's frontend performs standard card actions on a "hass-action" event,
+    // including navigate, url, more-info, toggle, perform-action and confirmation dialogs.
     _handleImageTap() {
         const c = this._config;
         this.dispatchEvent(
@@ -718,6 +802,26 @@ _applianceState() {
           <circle cx="12" cy="12" r="2" fill="#f0a04b" stroke="none"/>
         </svg>`;
         }
+        if (type === "hood") {
+            return `
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2f80ed" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.5 2.8h5v6.4"/>
+          <path d="M9.5 2.8v6.4"/>
+          <path d="M8.6 9.2h6.8l5.2 6.2H3.4z"/>
+          <rect x="2.6" y="15.4" width="18.8" height="3" rx="1.2"/>
+          <circle cx="12" cy="12.6" r="1.4" fill="#2f80ed" stroke="none"/>
+        </svg>`;
+        }
+        return `
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2f80ed" stroke-width="1.9"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.2" y="2.8" width="17.6" height="18.4" rx="3.4"/>
+        <circle cx="12" cy="13" r="4.6"/>
+        <circle cx="12" cy="13" r="1.6" fill="#2f80ed" stroke="none"/>
+        <circle cx="7"  cy="6.2" r="1.05" fill="#2f80ed" stroke="none"/>
+      </svg>`;
+       }
         if (type === "drying_rack") {
             return `
         <svg viewBox="0 0 24 24" fill="none" stroke="#2f80ed" stroke-width="1.9"
@@ -737,7 +841,8 @@ _applianceState() {
         <circle cx="12" cy="13" r="1.6" fill="#2f80ed" stroke="none"/>
         <circle cx="7"  cy="6.2" r="1.05" fill="#2f80ed" stroke="none"/>
       </svg>`;
-    }
+      }
+    
 
     _machineSvg() {
         const type = this._applianceType;
@@ -754,6 +859,8 @@ _applianceState() {
             return this._svgDryingRack(u);
         if (type === "airco")
             return this._svgAirco(u);
+        if (type === "hood")
+            return this._svgHood(u);
         return this._svgWasher(u);
     }
 
@@ -1218,6 +1325,93 @@ _svgAirco(u) {
       </svg>`;
     }
 
+    _svgHood(u) {
+        // Three wide, swept blades on a small dark hub, like a classic fan propeller.
+        const blades = [0, 120, 240].map((a) => `
+            <g transform="rotate(${a})">
+              <path class="hd-blade" fill="url(#${u}-blade)" d="${WashingMachineCard.HOOD_BLADE}"/>
+              <ellipse class="hd-sheen" cx="-1.5" cy="-17" rx="7.5" ry="3" transform="rotate(-4 -1.5 -17)"/>
+            </g>`).join("");
+        const bars = [0, 1, 2, 3, 4].map((i) => `
+          <rect class="hd-lvl" x="${156 + i * 7}" y="${(160 - (i + 1) * 2.2).toFixed(1)}" width="4.4"
+                height="${(4 + (i + 1) * 2.2).toFixed(1)}" rx="1.2"/>`).join("");
+        return `
+      <svg class="machine" id="machine" viewBox="0 0 220 232" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${u}-body" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset=".55" stop-color="#f2f5f9"/>
+            <stop offset="1" stop-color="#d9e0e9"/>
+          </linearGradient>
+          <linearGradient id="${u}-steel" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#e3e8ef"/>
+            <stop offset=".5" stop-color="#f7f9fb"/>
+            <stop offset="1" stop-color="#d3dae3"/>
+          </linearGradient>
+          <radialGradient id="${u}-glass" cx=".38" cy=".32" r=".95">
+            <stop offset="0" stop-color="#31456e"/>
+            <stop offset=".6" stop-color="#1e2c4d"/>
+            <stop offset="1" stop-color="#131d36"/>
+          </radialGradient>
+          <linearGradient id="${u}-beam" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffe9a3" stop-opacity=".8"/>
+            <stop offset="1" stop-color="#ffe9a3" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="${u}-blade" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#9aa9bd"/>
+            <stop offset="1" stop-color="#d9e1eb"/>
+          </linearGradient>
+          <clipPath id="${u}-fanclip"><circle cx="110" cy="104" r="26"/></clipPath>
+        </defs>
+        <path class="hd-beam" d="M52 172 L68 172 L88 214 L28 214 Z" fill="url(#${u}-beam)"/>
+        <path class="hd-beam" d="M152 172 L168 172 L192 214 L132 214 Z" fill="url(#${u}-beam)"/>
+        <rect x="30" y="214" width="160" height="9" rx="3" fill="#1a2433"/>
+        <ellipse cx="74" cy="216.5" rx="20" ry="2" fill="#3a4a60"/>
+        <ellipse cx="146" cy="216.5" rx="20" ry="2" fill="#3a4a60"/>
+        <g fill="none" stroke="#6fa0e0" stroke-width="2.6" stroke-linecap="round">
+          <path class="hd-air" d="M84 211 C 78 202, 90 194, 84 185 S 88 177, 86 174"/>
+          <path class="hd-air" d="M110 211 C 104 202, 116 194, 110 185 S 114 177, 112 174"/>
+          <path class="hd-air" d="M136 211 C 130 202, 142 194, 136 185 S 140 177, 138 174"/>
+        </g>
+        <rect x="86" y="4" width="48" height="56" rx="3" fill="url(#${u}-steel)"/>
+        <rect x="86" y="4" width="48" height="56" rx="3" fill="none" stroke="#c7cfda" stroke-width="1.3"/>
+        <line x1="86" y1="32" x2="134" y2="32" stroke="#c7cfda" stroke-width="1.1"/>
+        <path d="M80 58 L140 58 L198 141 L22 141 Z" fill="url(#${u}-body)"/>
+        <path d="M80 58 L140 58 L198 141 L22 141 Z" fill="none" stroke="#c7cfda" stroke-width="1.4"
+              stroke-linejoin="round"/>
+        <circle cx="110" cy="104" r="31" fill="#e3e9f0" stroke="#c2cbd6" stroke-width="1.3"/>
+        <circle cx="110" cy="104" r="26" fill="url(#${u}-glass)"/>
+        <g clip-path="url(#${u}-fanclip)">
+          <g class="hd-fan"><g transform="translate(110 104)">${blades}
+            <circle r="6.6" fill="#4a586c" stroke="#2c3747" stroke-width=".9"/>
+            <circle r="5" fill="none" stroke="#6b7a8f" stroke-width=".6"/>
+            <g stroke="#2c3747" stroke-width=".55">
+              <line x1="0" y1="-4.6" x2="0" y2="4.6"/>
+              <line x1="-4" y1="-2.3" x2="4" y2="2.3"/>
+              <line x1="-4" y1="2.3" x2="4" y2="-2.3"/>
+            </g>
+            <circle r="1.2" fill="#e8eef6"/>
+          </g></g>
+        </g>
+        <circle cx="110" cy="104" r="26" fill="none" stroke="#0d1526" stroke-width="1.6" opacity=".35"/>
+        <ellipse cx="100" cy="93" rx="11" ry="6" fill="#ffffff" opacity=".12" transform="rotate(-24 100 93)"/>
+        <rect x="14" y="140" width="192" height="31" rx="10" fill="url(#${u}-body)"/>
+        <rect x="14" y="140" width="192" height="31" rx="10" fill="none" stroke="#c7cfda" stroke-width="1.4"/>
+        <circle cx="34" cy="155.5" r="4.2" fill="#e9edf3" stroke="#c2cbd6" stroke-width="1.1"/>
+        <circle cx="48" cy="155.5" r="4.2" fill="#e9edf3" stroke="#c2cbd6" stroke-width="1.1"/>
+        <circle class="hd-btn-light" cx="62" cy="155.5" r="4.2" stroke="#c2cbd6" stroke-width="1.1"/>
+        <rect x="80" y="147" width="66" height="17" rx="8.5" fill="#0d1526"/>
+        <text id="dispTime" x="106" y="159.5" text-anchor="middle"
+              font-family="ui-monospace, 'SF Mono', Consolas, monospace"
+              font-size="11" font-weight="700" fill="#e8f1ff" letter-spacing="1">--:--</text>
+        <circle id="dispDot" cx="136" cy="155.5" r="2.4" fill="#22b263"/>
+        <g class="hd-levels">${bars}
+        </g>
+        <ellipse class="hd-lamp" cx="60" cy="171.5" rx="9" ry="2.2"/>
+        <ellipse class="hd-lamp" cx="160" cy="171.5" rx="9" ry="2.2"/>
+      </svg>`;
+    }
+
     _build() {
         const c = this._config;
         const root = this.shadowRoot || this.attachShadow({
@@ -1288,7 +1482,7 @@ _svgAirco(u) {
           --wm-divider: rgba(255,255,255,.09);
           --wm-appliance-dim: .93;
         }
-        /* Voeg deze regel toe voor het droogrek in dark mode: */
+        //* Dryying rack dark mode: */
         :host(.wm-dark) .rack-lines path {
           stroke: #7d8894 !important;
         }
@@ -1477,6 +1671,28 @@ _svgAirco(u) {
         .running .mw-frame { animation: dash-crawl 3.2s linear infinite; }
         .running .mw-dots { animation: heatPulse 1.4s ease-in-out infinite; }
 
+
+        .hd-fan { transform-box: view-box; transform-origin: 110px 104px; }
+        .hd-blade { stroke: #7d8ca1; stroke-width: .6; stroke-linejoin: round; opacity: .96; }
+        .hd-sheen { fill: #ffffff; opacity: .22; }
+        .hood-intensive .hd-blade { fill: #f3a95c; stroke: #c9782b; }
+        /* Clockwise like the washer drum; the blade tips are swept back to trail behind. */
+        .running .hd-fan { animation: spin var(--hd-fan-dur, 1.2s) linear infinite; }
+        .hd-air { opacity: 0; stroke-dasharray: 6 9; }
+        .running .hd-air { opacity: .85; animation: airRise var(--hd-air-dur, 1.4s) linear infinite; }
+        .running .hd-air:nth-child(2) { animation-delay: -.45s; }
+        .running .hd-air:nth-child(3) { animation-delay: -.9s; }
+        .hd-beam { opacity: 0; transition: opacity .4s ease; }
+        .hood-light .hd-beam { opacity: 1; }
+        .hd-lamp { fill: #b7c0cb; }
+        .hood-light .hd-lamp { fill: #fff3c4; }
+        .hd-btn-light { fill: #e9edf3; }
+        .hood-light .hd-btn-light { fill: #ffd76a; }
+        .hd-lvl { fill: #3a4a60; }
+        .hd-lvl.on { fill: #22b263; }
+        .hood-intensive .hd-lvl.on { fill: #f0a04b; }
+        @keyframes airRise { to { stroke-dashoffset: -30; } }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes tumble {
           0%, 100% { transform: rotate(-14deg); }
@@ -1534,6 +1750,7 @@ _svgAirco(u) {
           .running .ov-frame, .running .ov-food,
           .running .mw-glow, .running .mw-wave, .running .mw-rim,
           .running .mw-mug, .running .mw-frame, .running .mw-dots,
+          .running .hd-fan, .running .hd-air,
           .running .badge .b-dot, .running .ring-anim { animation: none; }
         }
 
@@ -1550,6 +1767,8 @@ _svgAirco(u) {
         .ring-arc   { stroke: var(--wm-accent); stroke-linecap: round; }
         .ring-anim  { transform-origin: 48px 48px; }
         .running .ring-anim { animation: spin 1.8s linear infinite; }
+        .hood-mode .ring-anim { animation: none; }
+        .hood-mode .ring-arc { transition: stroke-dasharray .5s ease; }
         .ring-center {
           position: absolute; inset: 0; display: flex; flex-direction: column;
           align-items: center; justify-content: center; text-align: center;
@@ -1912,6 +2131,63 @@ _svgAirco(u) {
         }
     }
 
+    // Hood-specific display: fan speed in the ring, spin speed of the impeller, level bars,
+    // intensive mode and the light. Elapsed running time stays on the hood's own display.
+    _updateHood(active) {
+        const c = this._config;
+        const t = this._t;
+        const wrap = this._el("wrap");
+        const fan = this._hoodLevel(c.fan_entity);
+        const intens = this._hoodLevel(c.intensive_entity);
+        const intLevel = active ? (intens?.level || 0) : 0;
+        const intensive = intLevel > 0;
+        const lightOn = this._st(c.light_entity)?.state === "on";
+        wrap.classList.add("hood-mode");
+        wrap.classList.toggle("hood-light", lightOn);
+        wrap.classList.toggle("hood-intensive", intensive);
+
+        let frac = null;
+        if (intensive)
+            frac = 1;
+        else if (fan && fan.percent)
+            frac = Math.min(1, fan.level / 100);
+        else if (fan && fan.max)
+            frac = Math.min(1, fan.level / fan.max);
+
+        // Faster spin for higher speeds; intensive is faster still.
+        const dur = intensive
+            ? Math.max(0.22, 0.34 - 0.05 * (intLevel - 1))
+            : (frac ? 1.7 - 1.2 * frac : 1.2);
+        wrap.style.setProperty("--hd-fan-dur", `${dur.toFixed(2)}s`);
+        wrap.style.setProperty("--hd-air-dur", `${Math.max(0.6, dur * 1.5).toFixed(2)}s`);
+
+        const barCount = fan?.percent ? 5 : Math.min(5, Math.max(1, fan?.max || 3));
+        const barsOn = !active ? 0 : (intensive ? barCount : Math.round((frac || 0) * barCount));
+        this.shadowRoot.querySelectorAll(".hd-lvl").forEach((bar, i) => {
+            bar.style.display = i < barCount ? "" : "none";
+            bar.classList.toggle("on", i < barsOn);
+        });
+
+        const arc = this._el("ringArc");
+        const hasSpeed = active && (intensive || (fan && fan.level > 0));
+        if (hasSpeed) {
+            if (intensive) {
+                this._el("ringTime").textContent =
+                    intens.max && intens.max > 1 ? `${intLevel}/${intens.max}` : String(intLevel);
+                this._el("ringLabel").textContent = t.ring_intensive;
+            } else {
+                this._el("ringTime").textContent = fan.percent ? `${fan.level}%`
+                    : (fan.max ? `${fan.level}/${fan.max}` : String(fan.level));
+                this._el("ringLabel").textContent = t.ring_fan;
+            }
+            const circ = 2 * Math.PI * 39;
+            arc.setAttribute("stroke-dasharray", frac !== null
+                ? `${(Math.max(0.04, frac) * circ).toFixed(1)} ${circ.toFixed(1)}` : "160 85");
+        } else {
+            arc.setAttribute("stroke-dasharray", "160 85");
+        }
+    }
+
     _update() {
         const c = this._config;
         const t = this._t;
@@ -1948,6 +2224,14 @@ _svgAirco(u) {
         const ringState = ["running", "idle", "paused", "standby"].includes(displayState) ? displayState : "off";
         this._el("ringLabel").textContent = remainingClock !== null ? t.ring_remaining : t[`ring_${ringState}`];
         this._el("ringArc").style.display = active ? "" : "none";
+        //hood
+        if (isHood)
+            this._updateHood(active);
+        if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
+            const rawState = status ? String(status.state) : "";
+            const capitalizedRaw = WashingMachineCard.capitalize(rawState, t.locale);
+            this._el("stState").textContent = noData ? t.state_nodata : capitalizedRaw;
+            //hood
         if (this._applianceType === "airco" && c.climate_entity && this._hass.states[c.climate_entity]) {
             const climState = this._hass.states[c.climate_entity].state;
             const climMap = {
@@ -2076,6 +2360,10 @@ _svgAirco(u) {
                 v !== null ? `${v} <span class="lc-unit">${c.currency}</span>` : "—";
             anyLc = true;
         }
+            // A hood has no cycles, so the last-cycle panel is not shown for it.
+        this._el("lastCycle").classList.toggle("hidden", !anyLc || this._applianceType === "hood");
+
+            
         if (anyLc)
             this._el("lastCycle").classList.remove("hidden");
 
@@ -2273,10 +2561,46 @@ class WashingMachineCardEditor extends HTMLElement {
                                     }, {
                                         value: "airco",
                                         label: "Airco"
+                                    }, {
+                                        value: "hood",
+                                        label: "Cooker hood (beta)"
                                     },
                                 ],
                             },
                         },
+                    }, {
+                        key: "fan_entity",
+                        kind: "entity",
+                        title: "Fan speed entity",
+                        description: "Hood only. A select with stages (e.g. Home Connect venting level), a fan entity, or a number. Shown in the ring and sets how fast the fan spins.",
+                        selector: {
+                            entity: {
+                                domain: ["select", "input_select", "fan", "number", "input_number", "sensor"]
+                            }
+                        },
+                        visibleIf: (config) => WashingMachineCard.normalizeType(config?.appliance_type) === "hood",
+                    }, {
+                        key: "intensive_entity",
+                        kind: "entity",
+                        title: "Intensive mode entity",
+                        description: "Hood only, optional. When it reports a stage above off, the card shows intensive mode.",
+                        selector: {
+                            entity: {
+                                domain: ["select", "input_select", "number", "input_number", "sensor", "switch", "binary_sensor"]
+                            }
+                        },
+                        visibleIf: (config) => WashingMachineCard.normalizeType(config?.appliance_type) === "hood",
+                    }, {
+                        key: "light_entity",
+                        kind: "entity",
+                        title: "Light entity",
+                        description: "Hood only, optional. Lights up the illustration when on.",
+                        selector: {
+                            entity: {
+                                domain: ["light", "switch", "input_boolean"]
+                            }
+                        },
+                        visibleIf: (config) => WashingMachineCard.normalizeType(config?.appliance_type) === "hood",
                     }, {
                         key: "status_entity",
                         kind: "entity",
