@@ -162,8 +162,8 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Oven", state_running: "Bakt" },
                 microwave: { name: "Magnetron", state_running: "Verwarmt" },
                 drying_rack: { name: "Droogrek", state_running: "Verwarmt" },
-                airco: { name: "Airco", state_running: "Koelt / Verwarmt" },
                 hood: { name: "Afzuigkap", state_running: "Zuigt af" },
+                airco: { name: "Airco", state_running: "Koelt / Verwarmt" },
             },
             running_states: [
                 "wassen", "bezig", "centrifugeren", "spoelen", "drogen",
