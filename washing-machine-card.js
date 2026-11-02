@@ -752,7 +752,7 @@ _applianceState() {
         this._toggle(c.plug_entity);
     }
 
-    _headerIcon() {
+_headerIcon() {
         const type = this._applianceType;
         if (type === "dryer") {
             return `
@@ -817,15 +817,6 @@ _applianceState() {
           <circle cx="12" cy="12.6" r="1.4" fill="#2f80ed" stroke="none"/>
         </svg>`;
         }
-        return `
-      <svg viewBox="0 0 24 24" fill="none" stroke="#2f80ed" stroke-width="1.9"
-           stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3.2" y="2.8" width="17.6" height="18.4" rx="3.4"/>
-        <circle cx="12" cy="13" r="4.6"/>
-        <circle cx="12" cy="13" r="1.6" fill="#2f80ed" stroke="none"/>
-        <circle cx="7"  cy="6.2" r="1.05" fill="#2f80ed" stroke="none"/>
-      </svg>`;
-       }
         if (type === "drying_rack") {
             return `
         <svg viewBox="0 0 24 24" fill="none" stroke="#2f80ed" stroke-width="1.9"
@@ -845,7 +836,7 @@ _applianceState() {
         <circle cx="12" cy="13" r="1.6" fill="#2f80ed" stroke="none"/>
         <circle cx="7"  cy="6.2" r="1.05" fill="#2f80ed" stroke="none"/>
       </svg>`;
-      }
+    }
     
 
     _machineSvg() {
@@ -2229,7 +2220,7 @@ _svgAirco(u) {
         this._el("ringLabel").textContent = remainingClock !== null ? t.ring_remaining : t[`ring_${ringState}`];
         this._el("ringArc").style.display = active ? "" : "none";
         //hood
-        if (isHood)
+        if (this._applianceType === "hood")
             this._updateHood(active);
         if (c.show_raw_status && !WashingMachineCard.isBooleanStatusEntity(c.status_entity)) {
             const rawState = status ? String(status.state) : "";
