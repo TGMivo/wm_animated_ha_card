@@ -135,7 +135,8 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Four", state_running: "Cuisson en cours" },
                 microwave: { name: "Micro-ondes", state_running: "Réchauffage en cours" },
                 drying_rack: { name: "Étendoir", state_running: "Séchage en cours" },
-                airco: { name: "Climatisation", state_running: "Refroidissement / Chauffage" }
+                airco: { name: "Climatisation", state_running: "Refroidissement / Chauffage" },
+                hood: { name: "Hotte", state_running: "Aspiration" },
             },
             running_states: [
                 "lavage", "en cours", "essorage", "rincage", "rinçage",
@@ -161,7 +162,8 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Oven", state_running: "Bakt" },
                 microwave: { name: "Magnetron", state_running: "Verwarmt" },
                 drying_rack: { name: "Droogrek", state_running: "Verwarmt" },
-                airco: { name: "Airco", state_running: "Koelt / Verwarmt" }
+                airco: { name: "Airco", state_running: "Koelt / Verwarmt" },
+                hood: { name: "Afzuigkap", state_running: "Zuigt af" },
             },
             running_states: [
                 "wassen", "bezig", "centrifugeren", "spoelen", "drogen",
@@ -187,7 +189,8 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Forno", state_running: "Assando" },
                 microwave: { name: "Micro-ondas", state_running: "Aquecendo" },
                 drying_rack: { name: "Estendal de roupa", state_running: "Secando" },
-                airco: { name: "Ar-condicionado", state_running: "Refrigeração / Aquecimento" }
+                airco: { name: "Ar-condicionado", state_running: "Refrigeração / Aquecimento" },
+                hood: { name: "Exaustor", state_running: "Aspirando" },
             },
             running_states: [
                 "lavando", "lavagem", "lavagem longa", "lavagem normal", "lavagem curta", "em andamento", "rodando",
@@ -217,6 +220,7 @@ class WashingMachineCard extends HTMLElement {
                 microwave: { name: "Φούρνος μικροκυμάτων", state_running: "Ζέσταμα" },
                 drying_rack: { name: "Απλώστρα ρούχων", state_running: "Στέγνωμα" },
                 airco: { name: "Κλιματισμός", state_running: "Ψύξη / Θέρμανση" }
+                hood: { name: "Απορροφητήρας", state_running: "Απορρόφηση" },
             },
             running_states: [
                 "πλύση", "πλυση", "πλύσιμο", "πλυσιμο", "ξέβγαλμα", "ξεβγαλμα", "στύψιμο", "στυψιμο",
