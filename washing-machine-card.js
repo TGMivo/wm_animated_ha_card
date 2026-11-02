@@ -10,9 +10,29 @@
  * Version: 1.5.4.1
  */
 
-class WashingMachineCard extends HTMLElement {
-    static APPLIANCE_TYPES = ["washer", "dryer", "dishwasher", "oven", "microwave", "drying_rack", "airco"];
+class WashingMachineCard extends HTMLElement {   
+    static APPLIANCE_TYPES = ["washer", "dryer", "dishwasher", "oven", "microwave", "drying_rack", "airco", "hood"];
 
+    // One hood fan blade around the origin, pointing up: a smooth egg-shaped paddle that is
+    // narrow at the hub and wide at the rim, swept slightly sideways. Built from sampled
+    // points so the outline has no corners.
+    static HOOD_BLADE = (() => {
+        const pts = [];
+        const c = 14, b = 10.8, a = 16;
+        for (let i = 0; i < 72; i++) {
+            const t = (i / 72) * Math.PI * 2;
+            const y0 = b * Math.sin(t);
+            const s = (y0 + b) / (2 * b);               // 0 at the hub end, 1 at the rim
+            const x = a * Math.cos(t) * (0.3 + 0.7 * Math.pow(s, 0.6)) + 1.8 * s;
+            const r = c + y0;
+            const sweep = 0.3 * s;
+            // Mirrored so the tips lean counter-clockwise and trail a clockwise spin.
+            const px = -(x * Math.cos(sweep) + r * Math.sin(sweep));
+            const py = -(r * Math.cos(sweep) - x * Math.sin(sweep));
+            pts.push(`${px.toFixed(2)} ${py.toFixed(2)}`);
+        }
+        return `M${pts.join(" L")} Z`;
+    })();
     static STRINGS = {
         en: {
             name: "Washing machine",
@@ -33,7 +53,8 @@ class WashingMachineCard extends HTMLElement {
                 oven: { name: "Oven", state_running: "Baking" },
                 microwave: { name: "Microwave", state_running: "Heating" },
                 drying_rack: { name: "Drying rack", state_running: "Heating" },
-                airco: { name: "Air conditioning", state_running: "Cooling / Heating" }
+                airco: { name: "Air conditioning", state_running: "Cooling / Heating" },
+                hood: { name: "Cooker hood", state_running: "Extracting" },
             },
             running_states: [
                 "washing", "running", "run", "wash", "spin", "rinse", "drying", "dry", "tumble",
